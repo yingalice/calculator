@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/602d755a29.js" crossorigin="anonymous"></script>
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <main class="main">
+      <div class="calculator">
+        <div class="display">
+          <div class="display__main">0</div>
+          <div class="display__result"></div>  
+        </div>
+        <div class="buttons">
+          <button type="button" data-key="7" data-btn-type="number">7</button>
+          <button type="button" data-key="8" data-btn-type="number">8</button>
+          <button type="button" data-key="9" data-btn-type="number">9</button>
+          <button type="button" data-key="/" data-btn-type="operator">÷</button>
+
+          <button type="button" data-key="4" data-btn-type="number">4</button>
+          <button type="button" data-key="5" data-btn-type="number">5</button>
+          <button type="button" data-key="6" data-btn-type="number">6</button>
+          <button type="button" data-key="*" data-btn-type="operator">x</button>
+
+          <button type="button" data-key="1" data-btn-type="number">1</button>
+          <button type="button" data-key="2" data-btn-type="number">2</button>
+          <button type="button" data-key="3" data-btn-type="number">3</button>
+          <button type="button" data-key="-" data-btn-type="operator">-</button>
+
+          <button type="button" data-key="0" data-btn-type="number">0</button>
+          <button type="button" data-key="." data-btn-type="decimal">.</button>
+          <button type="button" data-key="+" data-btn-type="operator">+</button>
+          
+          <button type="button" data-key="Escape" data-btn-type="clear">C</button>
+          <button type="button" data-key="Backspace" data-btn-type="backspace">⌫</button>
+          <button type="button" data-key="Enter" data-btn-type="equals">=</button>
+        </div>
+      </div>
+    </main>
+    <footer class="footer">
+      <p class="footer__text">Copyright &copy; 2023 by
+        <a class="footer__link" href="https://github.com/yingalice" target="_blank">yingalice</a>
+        <i class="fa-brands fa-github"></i>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
