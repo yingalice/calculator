@@ -191,6 +191,14 @@ function updateMainDisplay(content) {
 }
 
 function updateResultDisplay(content) {
+  content = removeComma(content);
+  if (isNaN(content)) {
+    resultDisplay.classList.add('display__result--error');
+    operatorBtns.forEach(btn => btn.disabled = true);
+  } else {
+    resultDisplay.classList.remove('display__result--error');
+    operatorBtns.forEach(btn => btn.disabled = false);
+  }
   resultDisplayValue = addComma(content);
   resultDisplay.textContent = resultDisplayValue;
 }
@@ -201,7 +209,7 @@ function getCurrentOperand() {
 
 function roundResult(input) {
   if (isNaN(input)) return input;
-  let roundedNumber = String(Math.round(input * 10000000000) / 10000000000);
+  let roundedNumber = String(Math.round(input * 1e15) / 1e15);
   return roundedNumber;
 }
 
@@ -212,7 +220,7 @@ function addComma(input) {
   return !isNaN(inputWithoutComma) && inputWithoutComma !== '' ?
       parseFloat(inputWithoutComma).toLocaleString('en', {
         minimumFractionDigits: minimumFractionDigits,
-        maximumFractionDigits: 20,
+        maximumFractionDigits: 15,
       })
     : input;
 }
