@@ -17,6 +17,7 @@ const numberBtns = document.querySelectorAll('[data-btn-type="number"]');
 const operatorBtns = document.querySelectorAll('[data-btn-type="operator"]');
 
 document.addEventListener('keydown', handleKeyboardInput);
+allBtns.forEach(btn => addEventListener('click', (e) => e.target.blur()));
 historyBtns.forEach(btn => btn.addEventListener('click', saveHistory));
 numberBtns.forEach(btn => btn.addEventListener('click', appendNumber));
 operatorBtns.forEach(btn => btn.addEventListener('click', appendOperator));
@@ -124,7 +125,10 @@ function appendNumber(e) {
   }
   opr[operand] += numberInput;
   if (operand === 'operand2') updateResultDisplay(String(operate()));
-  updateMainDisplay(`${mainDisplayValue}${numberInput}`);
+  const operandComma = addComma(opr[operand]);
+  const idx = mainDisplayValue.lastIndexOf(' ');
+  const mainDisplayValueWithoutLastOperand = (idx >= 0) ? mainDisplayValue.slice(0, idx) : '';
+  updateMainDisplay(`${mainDisplayValueWithoutLastOperand} ${operandComma}`);
 }
 
 function appendOperator(e) {
@@ -144,11 +148,11 @@ function appendOperator(e) {
 
 function calculate() {
   if (resultDisplayValue === '') return;
-  if (!isNaN(resultDisplayValue)) {
+  if (!isNaN(removeComma(resultDisplayValue))) {
     cleanupHistory();
     history[history.length - 1].equalsPressed = true;
     needsHistoryCleanup = true;
-    opr.operand1 = resultDisplayValue;
+    opr.operand1 = removeComma(resultDisplayValue);
     opr.operand2 = '';
     opr.operator = '';
     updateMainDisplay(resultDisplayValue);
@@ -186,7 +190,7 @@ function updateMainDisplay(content) {
 }
 
 function updateResultDisplay(content) {
-  resultDisplayValue = content;
+  resultDisplayValue = addComma(content);
   resultDisplay.textContent = resultDisplayValue;
 }
 
@@ -198,4 +202,20 @@ function roundResult(input) {
   if (isNaN(input)) return input;
   let roundedNumber = String(Math.round(input * 10000000000) / 10000000000);
   return roundedNumber;
+}
+
+function addComma(input) {
+  const inputWithoutComma = removeComma(input);
+  const idx = inputWithoutComma.indexOf('.');
+  const minimumFractionDigits = idx >= 0 ? inputWithoutComma.length - idx - 1 : 0;
+  return !isNaN(inputWithoutComma) && inputWithoutComma !== '' ?
+      parseFloat(inputWithoutComma).toLocaleString('en', {
+        minimumFractionDigits: minimumFractionDigits,
+        maximumFractionDigits: 20,
+      })
+    : input;
+}
+
+function removeComma(input) {
+  return String(input).replace(/,/g, '');
 }
