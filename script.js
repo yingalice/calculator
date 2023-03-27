@@ -17,7 +17,7 @@ const numberBtns = document.querySelectorAll('[data-btn-type="number"]');
 const operatorBtns = document.querySelectorAll('[data-btn-type="operator"]');
 
 document.addEventListener('keydown', handleKeyboardInput);
-allBtns.forEach(btn => addEventListener('click', (e) => e.target.blur()));
+allBtns.forEach(btn => btn.addEventListener('click', addKeyboardHover));
 historyBtns.forEach(btn => btn.addEventListener('click', saveHistory));
 numberBtns.forEach(btn => btn.addEventListener('click', appendNumber));
 operatorBtns.forEach(btn => btn.addEventListener('click', appendOperator));
@@ -119,8 +119,9 @@ function appendDecimal() {
 function appendNumber(e) {
   const numberInput = e.target.textContent;
   const operand = getCurrentOperand();
-  if (mainDisplayValue === '0' || opr[operand].startsWith('0') && !opr[operand].includes('.')) {
+  if (mainDisplayValue === '0' || (opr[operand].startsWith('0') && !opr[operand].includes('.'))) {
     opr[operand] = '';
+    if (mainDisplayValue !== '0') history.pop();
     mainDisplayValue = mainDisplayValue.slice(0, -1);
   }
   opr[operand] += numberInput;
@@ -218,4 +219,10 @@ function addComma(input) {
 
 function removeComma(input) {
   return String(input).replace(/,/g, '');
+}
+
+function addKeyboardHover(e) {
+  e.target.blur();
+  e.target.classList.add('button--pressed');
+  setTimeout(() => e.target.classList.remove('button--pressed'), 100);
 }
