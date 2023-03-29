@@ -18,7 +18,8 @@
       <div class="calculator">
         <div class="display">
           <div class="display__main">0</div>
-          <div class="display__result"></div>  
+          <div class="display__cursor"></div>
+          <div class="display__result"></div>
         </div>
         <div class="buttons">
           <button type="button" data-key="7" data-btn-type="number">7</button>
@@ -42,9 +43,10 @@
           
           <button type="button" data-key="Escape" data-btn-type="clear">C</button>
           <button type="button" data-key="Backspace" data-btn-type="backspace">⌫</button>
-          <button type="button" data-key="Enter" data-btn-type="equals">=</button>
+          <button type="button" data-key="Enter =" data-btn-type="equals">=</button>
         </div>
       </div>
+      <p class="note">Operators evaluated left to right (NO order of operations)</p>
     </main>
     <footer class="footer">
       <p class="footer__text">Copyright &copy; 2023 by
