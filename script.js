@@ -1,5 +1,6 @@
 let expression = { operand1: '0', operand2: '', operator: '' };
 let display = { mainText: '0', resultText: '', cursor: 'off' };
+let history = [];
 
 const allBtns = document.querySelectorAll('[data-btn-type]');
 const numberBtns = document.querySelectorAll('[data-btn-type="number"]');
@@ -8,6 +9,8 @@ const decimalBtn = document.querySelector('[data-btn-type="decimal"');
 const clearBtn = document.querySelector('[data-btn-type="clear"]');
 const backspaceBtn = document.querySelector('[data-btn-type="backspace"]');
 const equalsBtn = document.querySelector('[data-btn-type="equals"]');
+const historyEntries = document.querySelector('.history__entries');
+const clearHistoryBtn = document.querySelector('.history__clear');
 
 allBtns.forEach((btn) => btn.addEventListener('click', addBtnPressEffect));
 numberBtns.forEach((btn) => btn.addEventListener('click', appendNumber));
@@ -16,6 +19,7 @@ decimalBtn.addEventListener('click', appendDecimal);
 clearBtn.addEventListener('click', clear);
 backspaceBtn.addEventListener('click', backspace);
 equalsBtn.addEventListener('click', displayFinalResult);
+clearHistoryBtn.addEventListener('click', clearHistory);
 document.addEventListener('keydown', handleKeyboardInput);
 
 function add(a, b) {
@@ -141,6 +145,7 @@ function finalizeCalculation() {
   // User is done entering this expression, so use result as operand1 of the
   // next expression, and clear out operand2 and operator
   const result = operate();
+  appendHistory({...expression, result: result});
   expression.operand1 = result;
   expression.operand2 = '';
   expression.operator = '';
@@ -167,6 +172,31 @@ function updateResultDisplay(content) {
   }
   display.resultText = String(content);
   resultDisplay.textContent = display.resultText;
+}
+
+function appendHistory(historyData) {
+  history.push(historyData);
+
+  const divEntry = document.createElement('div');
+  const divExpression = document.createElement('div');
+  const divResult = document.createElement('div');
+
+  divEntry.classList.add('history__entry');
+  divExpression.classList.add('history__expression');
+  divResult.classList.add('history__result');
+  divExpression.textContent = `${formatExpression()} =`
+  divResult.textContent = display.resultText;
+
+  historyEntries.insertBefore(divEntry, historyEntries.firstChild);
+  divEntry.appendChild(divExpression);
+  divEntry.appendChild(divResult);
+}
+
+function clearHistory() {
+  history = [];
+  while (historyEntries.firstChild) {
+    historyEntries.removeChild(historyEntries.lastChild);
+  }
 }
 
 function formatExpression() {

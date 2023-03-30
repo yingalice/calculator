@@ -6,6 +6,8 @@
   --color-aquamarine: 127, 255, 212;  /* results display */
   --color-goldenrod: 218, 165, 32;  /* clear and backspace buttons */
   --color-red: 255, 0, 0;  /* error text */
+  --color-dove-gray: 64, 64, 64;
+  --color-gray: 128, 128, 128;
   --color-navy-blue: 0, 11, 128;  /* footer */
   --border-radius: 8px;
 }
@@ -14,6 +16,7 @@ body {
   margin: 0;
   color: white;
   font-family: 'Quicksand', sans-serif;
+  font-size: 1rem;
   background-image: url('./img/background.png');
   background-size: cover;
   text-align: center;
@@ -27,7 +30,10 @@ body {
 }
 
 .main {
+  display: flex;
+  gap: 3rem;
   margin: auto;
+  height: 27.5rem;
 }
 
 .calculator {
@@ -35,7 +41,7 @@ body {
   border: 2px solid white;
   border-radius: var(--border-radius);
   box-shadow: 0px 0px 0px 0.75rem rgb(var(--color-mine-shaft)), 0px 0px 1rem 1rem rgb(var(--color-mine-shaft));
-  width: 325px;
+  width: 20rem;
   margin: 0 auto;
   background-image: linear-gradient(-225deg, #E3FDF5 0%, #FFE6FA 100%);
 }
@@ -165,6 +171,73 @@ button {
 [data-btn-type="clear"]:hover,
 [data-btn-type="backspace"]:hover {
   background-color:rgb(var(--color-goldenrod), 0.8);
+}
+
+.history {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid white;
+  border-radius: var(--border-radius);
+  width: 12.5rem;
+  background-color: rgb(var(--color-mine-shaft));
+}
+
+.history__title {
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.history__entries {
+  flex: 1;
+  border-top: 1px solid rgb(var(--color-santas-gray));;
+  border-bottom: 1px solid rgb(var(--color-santas-gray));;
+  overflow: auto;
+}
+
+.history__entries::-webkit-scrollbar {
+  width: 0.4rem;
+}
+
+.history__entries::-webkit-scrollbar-thumb {
+  border-radius: var(--border-radius);
+  background-color: rgb(var(--color-gray));
+}
+
+.history__entries::-webkit-scrollbar-track {
+  border-radius: var(--border-radius);
+  background-color: rgb(var(--color-santas-gray));
+}
+
+.history__entry {
+  padding: 1rem;
+}
+
+.history__expression,
+.history__result {
+  text-align: right;
+}
+
+.history__expression {
+  font-size: 0.8rem;
+  color: rgb(var(--color-santas-gray));
+}
+
+.history__result {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.history__clear {
+  padding: 0.5rem;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  font-size: 0.8rem;
+}
+
+.history__entry:hover,
+.history__clear:hover {
+  background-color: rgb(var(--color-dove-gray));
+  cursor: pointer;
 }
 
 .footer {
