@@ -167,15 +167,6 @@ button {
   background-color:rgb(var(--color-goldenrod), 0.8);
 }
 
-.note {
-  padding: 0.5rem;
-  border-radius: var(--border-radius);
-  margin-top: 1.5rem;
-  font-size: 0.75rem;
-  color: rgb(var(--color-mine-shaft));
-  background-color: rgb(var(--color-aquamarine), 0.8);
-}
-
 .footer {
   border-top: 0.25px solid white;
   background-color: rgb(var(--color-navy-blue), 0.5);
