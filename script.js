@@ -19,6 +19,7 @@ decimalBtn.addEventListener('click', appendDecimal);
 clearBtn.addEventListener('click', clear);
 backspaceBtn.addEventListener('click', backspace);
 equalsBtn.addEventListener('click', displayFinalResult);
+historyEntries.addEventListener('click', selectHistoryEntry, false);
 clearHistoryBtn.addEventListener('click', clearHistory);
 document.addEventListener('keydown', handleKeyboardInput);
 
@@ -145,7 +146,7 @@ function finalizeCalculation() {
   // User is done entering this expression, so use result as operand1 of the
   // next expression, and clear out operand2 and operator
   const result = operate();
-  appendHistory({...expression, result: result});
+  appendHistory({...expression, resultText: result});
   expression.operand1 = result;
   expression.operand2 = '';
   expression.operator = '';
@@ -190,6 +191,22 @@ function appendHistory(historyData) {
   historyEntries.insertBefore(divEntry, historyEntries.firstChild);
   divEntry.appendChild(divExpression);
   divEntry.appendChild(divResult);
+  divEntry.setAttribute('data-id', history.length - 1);
+}
+
+function selectHistoryEntry(e) {
+  // Update calculator display to match the selected history entry
+  const target = e.target.closest('.history__entry');
+  if (!target) return;
+  const id = Number(target.dataset.id);
+  expression = {
+    operand1: history[id].operand1,
+    operand2: history[id].operand2,
+    operator: history[id].operator
+  };
+  updateMainDisplay(formatExpression());
+  updateResultDisplay(history[id].resultText);
+  setCursorBlink('on');
 }
 
 function clearHistory() {
