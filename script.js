@@ -1,6 +1,7 @@
 let expression = { operand1: '0', operand2: '', operator: '' };
 let display = { mainText: '0', resultText: '', cursor: 'off' };
 let history = [];
+let savedExpression = {};
 
 const allBtns = document.querySelectorAll('[data-btn-type]');
 const numberBtns = document.querySelectorAll('[data-btn-type="number"]');
@@ -23,6 +24,7 @@ historyEntries.addEventListener('click', selectHistoryEntry, false);
 clearHistoryBtn.addEventListener('click', clearHistory);
 document.addEventListener('keydown', handleKeyboardInput);
 
+// ========== Math ==========
 function add(a, b) {
   return a + b;
 }
@@ -59,6 +61,8 @@ function operate() {
   }
 }
 
+
+// ========== Input ==========
 function appendNumber(e) {
   const numberInput = e.target.textContent;
   const operand = getCurrentOperand();
@@ -70,11 +74,10 @@ function appendNumber(e) {
     if (!isNaN(result)) {
       updateResultDisplay(addComma(result)); // Update calculation in real time
     } else {
-      updateResultDisplay(''); // Don't display divide by 0 error unless they press equal
+      updateResultDisplay(''); // Don't display divide by 0 error until equals is pressed
     }
   }
-  updateMainDisplay(formatExpression());
-  setCursorBlink('on');
+  restoreDisplayFromExpression();
 }
 
 function appendOperator(e) {
@@ -83,9 +86,7 @@ function appendOperator(e) {
   // Example: 12 + 7 - 5 * 3 = 42.  After inputting '12 + 7 -', main display will read '19 -'
   if (expression.operand2) finalizeCalculation();
   expression.operator = e.target.textContent;
-  updateMainDisplay(formatExpression());
-  updateResultDisplay('');
-  setCursorBlink('on');
+  restoreDisplayFromExpression();
 }
 
 function appendDecimal() {
@@ -93,19 +94,47 @@ function appendDecimal() {
   if (expression[operand].includes('.')) return; // No more than 1 decimal per operand
   const decimalFormat = expression[operand] === '' ? '0.' : '.'; // Format decimal with leading zero (ie. 0.15 insted of .15)
   expression[operand] += decimalFormat;
-  updateMainDisplay(formatExpression());
-  setCursorBlink('on');
+  restoreDisplayFromExpression();
 }
 
+function inputAccepted() {
+  setCursorBlink('on');
+  savedExpression = {};
+}
+
+function finalizeCalculation() {
+  // Returns result of the current expression
+  // User is done entering this expression (pressed equals or an additional operator)
+  // Use result as operand1 of next expression, and clear operand2 and operator
+  const result = operate();
+  savedExpression = {...expression};
+  appendHistory({...expression});
+  expression.operand1 = result;
+  expression.operand2 = '';
+  expression.operator = '';
+  return result;
+}
+
+
+// ========== Corrections ==========
 function clear() {
   // Reset everything
   expression = { operand1: '0', operand2: '', operator: '' };
   updateMainDisplay('0');
   updateResultDisplay('');
   setCursorBlink('off');
+  savedExpression = {};
 }
 
 function backspace() {
+  // If prior action was pressing equals to get a result,
+  // restore the previous expression
+  if (Object.keys(savedExpression).length !== 0) {
+    expression = {...savedExpression};
+    restoreDisplayFromExpression();
+    return;
+  }
+
   // Everything erased, reset to 0 and turn off cursor
   if (display.mainText.length === 1) {
     clear();
@@ -118,20 +147,23 @@ function backspace() {
   } else if (expression.operator) {
     expression.operator = '';
   } else if (expression.operand1) {
-    expression.operand1 = expression.operand1.slice(0, -1);
+    if (expression.operand1.includes('e')) {  // Clear for scientific notation (don't backspace one-by-one)
+      clear();
+      return;
+    } else {
+      expression.operand1 = expression.operand1.slice(0, -1);
+    }
   }
-
-  updateMainDisplay(formatExpression());  // Main display without last character
-  const result = (isExpressionComplete() && !(expression.operator === '÷' && Number(expression.operand2) === 0))
-                   ? addComma(operate())
-                   : '';
-  updateResultDisplay(result);  // Only display results if it can be calculated without error
-  setCursorBlink('on');
+  restoreDisplayFromExpression();
 }
 
+
+// ========== Display ==========
 function displayFinalResult() {
   if (!isExpressionComplete()) return;
-  const result = display.resultText === '' ? operate() : finalizeCalculation();
+  // If result is currently blank, then there's a hidden error
+  // Show the error, but don't save it to operand1 or update the main display
+  const result = (display.resultText === '') ? operate() : finalizeCalculation();
   if (isNaN(result)) {
     updateResultDisplay(addComma(result));
   } else {
@@ -139,18 +171,6 @@ function displayFinalResult() {
     updateResultDisplay('');
     setCursorBlink('off');
   }
-}
-
-function finalizeCalculation() {
-  // Returns result of the current expression
-  // User is done entering this expression, so use result as operand1 of the
-  // next expression, and clear out operand2 and operator
-  const result = operate();
-  appendHistory({...expression, resultText: result});
-  expression.operand1 = result;
-  expression.operand2 = '';
-  expression.operator = '';
-  return result;
 }
 
 function updateMainDisplay(content) {
@@ -175,6 +195,18 @@ function updateResultDisplay(content) {
   resultDisplay.textContent = display.resultText;
 }
 
+function restoreDisplayFromExpression() {
+  // Update the displays using the operands and operator currently stored in expression
+  // Used to restore from history selection or after pressing backspace
+  updateMainDisplay(formatExpression());
+  const result = (isExpressionComplete() && !(expression.operator === '÷' && Number(expression.operand2) === 0))
+                   ? addComma(operate())
+                   : '';
+  updateResultDisplay(result);  // Only display results if it can be calculated without error
+  inputAccepted();
+}
+
+// ========== History ==========
 function appendHistory(historyData) {
   history.push(historyData);
 
@@ -192,6 +224,10 @@ function appendHistory(historyData) {
   divEntry.appendChild(divExpression);
   divEntry.appendChild(divResult);
   divEntry.setAttribute('data-id', history.length - 1);
+
+  const height = window.getComputedStyle(divEntry).height;
+  divEntry.style.setProperty('--height', height);
+  divEntry.classList.add('history__entry--slide');
 }
 
 function selectHistoryEntry(e) {
@@ -199,21 +235,65 @@ function selectHistoryEntry(e) {
   const target = e.target.closest('.history__entry');
   if (!target) return;
   const id = Number(target.dataset.id);
-  expression = {
-    operand1: history[id].operand1,
-    operand2: history[id].operand2,
-    operator: history[id].operator
-  };
-  updateMainDisplay(formatExpression());
-  updateResultDisplay(history[id].resultText);
-  setCursorBlink('on');
+  expression = {...history[id]};
+  restoreDisplayFromExpression();
+  inputAccepted();
 }
 
 function clearHistory() {
   history = [];
-  while (historyEntries.firstChild) {
-    historyEntries.removeChild(historyEntries.lastChild);
+  historyEntries.classList.add('history__entries--fade');
+  [...historyEntries.children].forEach((div) => {
+    setTimeout(() => div.parentNode.removeChild(div), 1000);
+  });
+  setTimeout(() => historyEntries.classList.remove('history__entries--fade'), 1000);
+}
+
+
+// ========== Formatting ==========
+function addComma(input) {
+  // Returns string with number formatted with comma thousands separator (ie. 4150 -> 4,150)
+  input = String(input);
+
+  // Already in the desired format (no change):
+  if (
+    (!isNaN(input) && input.includes('e')) ||  // Scientific notation
+    input === '' ||                            // Blank
+    isNaN(input)                               // Can't divide by 0
+  ) {
+    return input;
   }
+
+  // Convert the whole number part to have comma thousands separator,
+  // then combine it with the decimal part unchanged
+  // Doing this because regex found online doesn't work on decimals
+  // Example: Want 4000.3127 to be 4,000.3127 (not 4,000.3,127)
+  const idxOfDecimal = input.indexOf('.');
+  const numberPart = idxOfDecimal >= 0 ? input.slice(0, idxOfDecimal) : input;
+  const decimalPart = idxOfDecimal >= 0 ? input.slice(idxOfDecimal) : '';
+  const numberPartWithComma = numberPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `${numberPartWithComma}${decimalPart}`;
+}
+
+function removeComma(input) {
+  // Returns string without commas (ie. 4,150 becomes 4150)
+  return String(input).replace(/,/g, '');
+}
+
+function roundResult(input) {
+  // Returns number rounded to max precision
+  if (isNaN(input)) return input;
+
+  // toPrecision(15) to prevent floating point calculation errors
+  // parseFloat to remove trailing 0's in decimals
+  const rounded = parseFloat(Number(input).toPrecision(15));
+
+  // JavaScript uses scientific notation at 1e21
+  // Change that to 1e16 so it doesn't take up too much space
+  const result = (rounded >= 1e16 || rounded <= -1e16)
+                 ? Number(rounded).toExponential()
+                 : rounded;
+  return result;
 }
 
 function formatExpression() {
@@ -225,6 +305,7 @@ function formatExpression() {
           ${addComma(expression.operand2)}`.trim();
 }
 
+// ========== Cursor ==========
 function setCursorBlink(status) {
   // Show or hide the blinking cursor
   const displayCursor = document.querySelector('.display__cursor');
@@ -242,41 +323,8 @@ function setCursorBlink(status) {
   display.cursor = status;
 }
 
-function roundResult(input) {
-  // Returns number rounded to max precision
-  // toPrecision(15) to prevent floating point calculation errors
-  // parseFloat to remove trailing 0's in decimals
-  if (isNaN(input)) return input;
-  return parseFloat(Number(input).toPrecision(15));
-}
 
-function addComma(input) {
-  // Returns string with number formatted with comma thousands separator (ie. 4150 -> 4,150)
-  input = String(input);
-  if (
-    (!isNaN(input) && input.includes('e')) || // Scientific notation
-    input === '' || // Blank
-    isNaN(input)
-  ) {
-    // Can't divide by 0
-    return input; // No change, already in desired format
-  }
-  // Convert the whole number part to have comma thousands separator,
-  // then combine it with the decimal part unchanged
-  // Doing this because regex found online doesn't work right on decimals
-  // Example: Want 4000.3127 to be 4,000.3127 (not 4,000.3,127)
-  const idxOfDecimal = input.indexOf('.');
-  const numberPart = idxOfDecimal >= 0 ? input.slice(0, idxOfDecimal) : input;
-  const decimalPart = idxOfDecimal >= 0 ? input.slice(idxOfDecimal) : '';
-  const numberPartWithComma = numberPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return `${numberPartWithComma}${decimalPart}`;
-}
-
-function removeComma(input) {
-  // Returns string without commas (ie. 4,150 becomes 4150)
-  return String(input).replace(/,/g, '');
-}
-
+// ========== Keyboard ==========
 function handleKeyboardInput(e) {
   // Click corresponding button upon keyboard input
   // Equals button responds to both 'Enter' and '=' keys
@@ -287,13 +335,17 @@ function handleKeyboardInput(e) {
 
 function addBtnPressEffect(e) {
   // Trigger button press effect, works with keyboard input
+  // Note: Normally would use :active in CSS, but that doesn't work with keyboard
   const btn = e.target;
   btn.blur();
   btn.classList.add('button--pressed');
-  setTimeout(() => btn.classList.remove('button--pressed'), 50);
+  setTimeout(() => btn.classList.remove('button--pressed'), 100);
 }
 
+
+// ========== Utility ==========
 function getCurrentOperand() {
+  // Returns which operand is currently being entered for number or decimal input
   return !expression.operator ? 'operand1' : 'operand2';
 }
 

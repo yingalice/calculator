@@ -84,7 +84,7 @@ body {
 
 .display__cursor--blink {
   background-color: rgb(var(--color-aquamarine));
-  animation: cursor-blink 1s steps(2) infinite;
+  animation: blink 1s steps(2) infinite;
 }
 
 .display__main {
@@ -178,25 +178,25 @@ button {
   flex-direction: column;
   border: 1px solid white;
   border-radius: var(--border-radius);
-  width: 12.5rem;
+  width: 13rem;
   background-color: rgb(var(--color-mine-shaft));
 }
 
 .history__title {
   padding: 0.5rem;
+  border-bottom: 1px solid rgb(var(--color-santas-gray));
   font-size: 1.2rem;
   font-weight: bold;
 }
 
 .history__entries {
   flex: 1;
-  border-top: 1px solid rgb(var(--color-santas-gray));;
-  border-bottom: 1px solid rgb(var(--color-santas-gray));;
   overflow: auto;
 }
 
 .history__entries::-webkit-scrollbar {
   width: 0.4rem;
+  height: 0.4rem;
 }
 
 .history__entries::-webkit-scrollbar-thumb {
@@ -209,12 +209,25 @@ button {
   background-color: rgb(var(--color-santas-gray));
 }
 
+.history__entries--fade {
+  animation: fade 0.5s forwards;
+}
+
 .history__entry {
   padding: 1rem;
 }
 
+.history__entry--slide {
+  animation: slide 0.75s forwards;
+}
+
 .history__expression,
 .history__result {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
   text-align: right;
 }
 
@@ -230,6 +243,7 @@ button {
 
 .history__clear {
   padding: 0.5rem;
+  border-top: 1px solid rgb(var(--color-santas-gray));
   border-radius: 0 0 var(--border-radius) var(--border-radius);
   font-size: 0.8rem;
 }
@@ -255,8 +269,25 @@ button {
   color: lightblue;
 }
 
-@keyframes cursor-blink {
+@keyframes blink {
   0% {
     opacity: 0%;
+  }
+}
+
+@keyframes slide {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  50% {
+    height: var(--height);
+    opacity: 0;
+  }
+}
+
+@keyframes fade {
+  100% {
+    opacity: 0;
   }
 }
