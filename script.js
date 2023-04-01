@@ -6,6 +6,7 @@ let savedExpression = {};
 const allBtns = document.querySelectorAll('[data-btn-type]');
 const numberBtns = document.querySelectorAll('[data-btn-type="number"]');
 const operatorBtns = document.querySelectorAll('[data-btn-type="operator"]');
+const posNegBtn = document.querySelector('[data-btn-type="posneg"');
 const decimalBtn = document.querySelector('[data-btn-type="decimal"');
 const clearBtn = document.querySelector('[data-btn-type="clear"]');
 const backspaceBtn = document.querySelector('[data-btn-type="backspace"]');
@@ -16,6 +17,7 @@ const clearHistoryBtn = document.querySelector('.history__clear');
 allBtns.forEach((btn) => btn.addEventListener('click', addBtnPressEffect));
 numberBtns.forEach((btn) => btn.addEventListener('click', appendNumber));
 operatorBtns.forEach((btn) => btn.addEventListener('click', appendOperator));
+posNegBtn.addEventListener('click', appendPosNeg);
 decimalBtn.addEventListener('click', appendDecimal);
 clearBtn.addEventListener('click', clear);
 backspaceBtn.addEventListener('click', backspace);
@@ -68,6 +70,7 @@ function appendNumber(e) {
   const operand = getCurrentOperand();
 
   if (expression[operand] === '0') expression[operand] = ''; // Remove leading zeros
+  if (expression[operand] === '-0') expression[operand] = '-'; // Remove leading zeros (negative)
   expression[operand] += numberInput; // Append new number
   if (operand === 'operand2') {
     const result = operate();
@@ -87,6 +90,18 @@ function appendOperator(e) {
   if (expression.operand2) finalizeCalculation();
   expression.operator = e.target.textContent;
   restoreDisplayFromExpression();
+}
+
+function appendPosNeg() {
+  // Returns current operand as a positive or negative number (toggle)
+  const operand = getCurrentOperand();
+  // Doing it this way instead of multiplying by -1 to keep original format
+  // (retain scientific or standard notation)
+  expression[operand] = (expression[operand].startsWith('-'))
+                          ? expression[operand].slice(1)
+                          : `-${expression[operand]}`;
+  restoreDisplayFromExpression();
+  return expression[operand];
 }
 
 function appendDecimal() {
@@ -143,11 +158,16 @@ function backspace() {
 
   // Remove last character, and update corresponding variable (operator1, operator2, or operand)
   if (expression.operand2) {
-    expression.operand2 = expression.operand2.slice(0, -1);
+    if ((expression.operand2.length === 2) && (expression.operand2.startsWith('-'))) {  // Single digit negative
+      expression.operand2 = '';
+    } else {
+      expression.operand2 = expression.operand2.slice(0, -1);
+    }
   } else if (expression.operator) {
     expression.operator = '';
   } else if (expression.operand1) {
-    if (expression.operand1.includes('e')) {  // Clear for scientific notation (don't backspace one-by-one)
+    if ((expression.operand1.includes('e')) ||  // Clear entire scientific notation (don't backspace one-by-one)
+       ((expression.operand1.length === 2) && (expression.operand1.startsWith('-')))) {  // Single digit negative
       clear();
       return;
     } else {

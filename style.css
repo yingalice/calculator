@@ -126,17 +126,18 @@ button {
   top: 1px;
 }
 
-[data-key="0"],
 [data-btn-type="equals"] {
   grid-column: span 2;
 }
 
 [data-btn-type="number"],
+[data-btn-type="posneg"],
 [data-btn-type="decimal"] {
   background-color: rgb(var(--color-santas-gray), 0.2);
 }
 
 [data-btn-type="number"]:hover,
+[data-btn-type="posneg"]:hover,
 [data-btn-type="decimal"]:hover {
   background-color: rgb(var(--color-santas-gray), 0);
 }
