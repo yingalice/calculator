@@ -1,11 +1,8 @@
 let expression = { operand1: '0', operand2: '', operator: '' };
-let display = { mainText: '0', resultText: '', cursor: 'off' };
+let display = { mainText: '0', resultText: '' };
 let history = [];
 let savedExpression = {};
 
-const calculator = document.querySelector('.calculator');
-const mainDisplay = document.querySelector('.display__main');
-const displayCursor = document.querySelector('.display__cursor');
 const allBtns = document.querySelectorAll('[data-btn-type]');
 const numberBtns = document.querySelectorAll('[data-btn-type="number"]');
 const operatorBtns = document.querySelectorAll('[data-btn-type="operator"]');
@@ -17,7 +14,6 @@ const equalsBtn = document.querySelector('[data-btn-type="equals"]');
 const historyEntries = document.querySelector('.history__entries');
 const clearHistoryBtn = document.querySelector('.history__clear');
 
-mainDisplay.addEventListener('scroll', setCursorVisibility);
 allBtns.forEach((btn) => btn.addEventListener('click', addBtnPressEffect));
 numberBtns.forEach((btn) => btn.addEventListener('click', appendNumber));
 operatorBtns.forEach((btn) => btn.addEventListener('click', appendOperator));
@@ -84,7 +80,7 @@ function appendNumber(e) {
       updateResultDisplay(''); // Don't display divide by 0 error until equals is pressed
     }
   }
-  restoreDisplayFromExpression();
+  refreshDisplay();
 }
 
 function appendOperator(e) {
@@ -93,18 +89,20 @@ function appendOperator(e) {
   // Example: 12 + 7 - 5 * 3 = 42.  After inputting '12 + 7 -', main display will read '19 -'
   if (expression.operand2) finalizeCalculation();
   expression.operator = e.target.textContent;
-  restoreDisplayFromExpression();
+  refreshDisplay();
 }
 
 function appendPosNeg() {
   // Returns current operand as a positive or negative number (toggle)
   const operand = getCurrentOperand();
+  if (expression[operand] === '') return;
+  
   // Doing it this way instead of multiplying by -1 to keep original format
   // (retain scientific or standard notation)
   expression[operand] = (expression[operand].startsWith('-'))
                           ? expression[operand].slice(1)
                           : `-${expression[operand]}`;
-  restoreDisplayFromExpression();
+  refreshDisplay();
   return expression[operand];
 }
 
@@ -113,12 +111,7 @@ function appendDecimal() {
   if (expression[operand].includes('.')) return; // No more than 1 decimal per operand
   const decimalFormat = expression[operand] === '' ? '0.' : '.'; // Format decimal with leading zero (ie. 0.15 insted of .15)
   expression[operand] += decimalFormat;
-  restoreDisplayFromExpression();
-}
-
-function inputAccepted() {
-  setCursorBlink('on');
-  savedExpression = {};
+  refreshDisplay();
 }
 
 function finalizeCalculation() {
@@ -141,7 +134,6 @@ function clear() {
   expression = { operand1: '0', operand2: '', operator: '' };
   updateMainDisplay('0');
   updateResultDisplay('');
-  setCursorBlink('off');
   savedExpression = {};
 }
 
@@ -150,11 +142,11 @@ function backspace() {
   // restore the previous expression
   if (Object.keys(savedExpression).length !== 0) {
     expression = {...savedExpression};
-    restoreDisplayFromExpression();
+    refreshDisplay();
     return;
   }
 
-  // Everything erased, reset to 0 and turn off cursor
+  // Everything erased, reset to 0
   if (display.mainText.length === 1) {
     clear();
     return;
@@ -178,7 +170,7 @@ function backspace() {
       expression.operand1 = expression.operand1.slice(0, -1);
     }
   }
-  restoreDisplayFromExpression();
+  refreshDisplay();
 }
 
 
@@ -193,11 +185,11 @@ function displayFinalResult() {
   } else {
     updateMainDisplay(addComma(result));
     updateResultDisplay('');
-    setCursorBlink('off');
   }
 }
 
 function updateMainDisplay(content) {
+  const mainDisplay = document.querySelector('.display__main');
   display.mainText = String(content);
   mainDisplay.textContent = display.mainText;
 }
@@ -218,15 +210,14 @@ function updateResultDisplay(content) {
   resultDisplay.textContent = display.resultText;
 }
 
-function restoreDisplayFromExpression() {
+function refreshDisplay() {
   // Update the displays using the operands and operator currently stored in expression
-  // Used to restore from history selection or after pressing backspace
   updateMainDisplay(formatExpression());
-  const result = (isExpressionComplete() && !(expression.operator === '÷' && Number(expression.operand2) === 0))
+  const result = (isExpressionComplete() && !((expression.operator === '÷') && (Number(expression.operand2) === 0)))
                    ? addComma(operate())
                    : '';
   updateResultDisplay(result);  // Only display results if it can be calculated without error
-  inputAccepted();
+  savedExpression = {};
 }
 
 // ========== History ==========
@@ -259,8 +250,7 @@ function selectHistoryEntry(e) {
   if (!target) return;
   const id = Number(target.dataset.id);
   expression = {...history[id]};
-  restoreDisplayFromExpression();
-  inputAccepted();
+  refreshDisplay();
 }
 
 function clearHistory() {
@@ -333,32 +323,6 @@ function addParenthesis(input) {
   return (String(input).startsWith('-'))
           ? `(${input})`
           : input;
-}
-
-// ========== Cursor ==========
-function setCursorBlink(status) {
-  // Show or hide the blinking cursor
-  switch (status) {
-    case 'on':
-      displayCursor.classList.add('display__cursor--blink');
-      break;
-    case 'off':
-      displayCursor.classList.remove('display__cursor--blink');
-      break;
-    default:
-      console.error(`${arguments.callee.name}() - Invalid status: ${status}`);
-      return;
-  }
-  display.cursor = status;
-}
-
-function setCursorVisibility() {
-  // Hide cursor if user has scrolled out of view (away from right of main display)
-  if (mainDisplay.scrollLeft >= 0) {
-    displayCursor.classList.remove('display__cursor--hide');
-  } else {
-    displayCursor.classList.add('display__cursor--hide');
-  }
 }
 
 

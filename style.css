@@ -1,13 +1,13 @@
 :root {
-  --color-mine-shaft: 50, 50, 50;  /* display */
+  --color-mine-shaft: 50, 50, 50;  /* display, box shadows, history bg */
   --color-steel-blue: 176, 196, 222;  /* button shadows */
-  --color-santas-gray: 164, 166, 180;  /* number buttons */
+  --color-santas-gray: 164, 166, 180;  /* number buttons, history text, history scrollbar (track) */
   --color-cornflower-blue: 100, 149, 237;  /* equals and operator buttons */
   --color-aquamarine: 127, 255, 212;  /* results display */
   --color-goldenrod: 218, 165, 32;  /* clear and backspace buttons */
   --color-red: 255, 0, 0;  /* error text */
-  --color-dove-gray: 64, 64, 64;
-  --color-gray: 128, 128, 128;
+  --color-dove-gray: 64, 64, 64;  /* history hover */
+  --color-gray: 128, 128, 128;  /* history scrollbar (thumb) */
   --color-chathams-blue: 28, 69, 140;  /* footer */
   --border-radius: 8px;
 }
@@ -48,7 +48,6 @@ body {
 
 .display {
   display: grid;
-  grid-template-columns: 99.9% 0.1%;
   grid-template-rows: 60% 40%;
   align-items: center;
   border: 2px solid silver;
@@ -74,22 +73,6 @@ body {
 .display__main::-webkit-scrollbar,
 .display__result::-webkit-scrollbar {
   display: none;
-}
-
-.display__cursor {
-  position: relative;
-  right: 0.5rem;
-  width: 1.5px;
-  height: 2rem;
-}
-
-.display__cursor--blink {
-  background-color: rgb(var(--color-aquamarine));
-  animation: blink 1s steps(2) infinite;
-}
-
-.display__cursor--hide {
-  top: -3rem;
 }
 
 .display__main {
