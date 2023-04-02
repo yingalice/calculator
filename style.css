@@ -8,7 +8,7 @@
   --color-red: 255, 0, 0;  /* error text */
   --color-dove-gray: 64, 64, 64;
   --color-gray: 128, 128, 128;
-  --color-navy-blue: 0, 11, 128;  /* footer */
+  --color-chathams-blue: 28, 69, 140;  /* footer */
   --border-radius: 8px;
 }
 
@@ -56,6 +56,7 @@ body {
   margin-bottom: 1rem;
   height: 5rem;
   background-color: rgb(var(--color-mine-shaft));
+  overflow: hidden;
   cursor: pointer;
 }
 
@@ -85,6 +86,10 @@ body {
 .display__cursor--blink {
   background-color: rgb(var(--color-aquamarine));
   animation: blink 1s steps(2) infinite;
+}
+
+.display__cursor--hide {
+  top: -3rem;
 }
 
 .display__main {
@@ -179,6 +184,7 @@ button {
   flex-direction: column;
   border: 1px solid white;
   border-radius: var(--border-radius);
+  box-shadow: 0px 0px 0px 0.75rem rgb(var(--color-mine-shaft)), 0px 0px 1rem 1rem rgb(var(--color-mine-shaft));
   width: 13rem;
   background-color: rgb(var(--color-mine-shaft));
 }
@@ -256,8 +262,7 @@ button {
 }
 
 .footer {
-  border-top: 0.25px solid white;
-  background-color: rgb(var(--color-navy-blue), 0.5);
+  background-color: rgb(var(--color-chathams-blue), 0.7);
 }
 
 .footer__text,

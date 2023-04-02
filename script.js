@@ -3,6 +3,9 @@ let display = { mainText: '0', resultText: '', cursor: 'off' };
 let history = [];
 let savedExpression = {};
 
+const calculator = document.querySelector('.calculator');
+const mainDisplay = document.querySelector('.display__main');
+const displayCursor = document.querySelector('.display__cursor');
 const allBtns = document.querySelectorAll('[data-btn-type]');
 const numberBtns = document.querySelectorAll('[data-btn-type="number"]');
 const operatorBtns = document.querySelectorAll('[data-btn-type="operator"]');
@@ -14,6 +17,7 @@ const equalsBtn = document.querySelector('[data-btn-type="equals"]');
 const historyEntries = document.querySelector('.history__entries');
 const clearHistoryBtn = document.querySelector('.history__clear');
 
+mainDisplay.addEventListener('scroll', setCursorVisibility);
 allBtns.forEach((btn) => btn.addEventListener('click', addBtnPressEffect));
 numberBtns.forEach((btn) => btn.addEventListener('click', appendNumber));
 operatorBtns.forEach((btn) => btn.addEventListener('click', appendOperator));
@@ -194,7 +198,6 @@ function displayFinalResult() {
 }
 
 function updateMainDisplay(content) {
-  const mainDisplay = document.querySelector('.display__main');
   display.mainText = String(content);
   mainDisplay.textContent = display.mainText;
 }
@@ -320,15 +323,21 @@ function formatExpression() {
   // Returns operands and operator formatted into an expression
   // Operands have comma thousands separator to be display-friendly
   // Example: 5,000 + 0.125
-  return `${addComma(expression.operand1)} 
+  return `${addParenthesis(addComma(expression.operand1))} 
           ${expression.operator} 
-          ${addComma(expression.operand2)}`.trim();
+          ${addParenthesis(addComma(expression.operand2))}`.trim();
+}
+
+function addParenthesis(input) {
+  // Add parenthesis for negative number
+  return (String(input).startsWith('-'))
+          ? `(${input})`
+          : input;
 }
 
 // ========== Cursor ==========
 function setCursorBlink(status) {
   // Show or hide the blinking cursor
-  const displayCursor = document.querySelector('.display__cursor');
   switch (status) {
     case 'on':
       displayCursor.classList.add('display__cursor--blink');
@@ -341,6 +350,15 @@ function setCursorBlink(status) {
       return;
   }
   display.cursor = status;
+}
+
+function setCursorVisibility() {
+  // Hide cursor if user has scrolled out of view (away from right of main display)
+  if (mainDisplay.scrollLeft >= 0) {
+    displayCursor.classList.remove('display__cursor--hide');
+  } else {
+    displayCursor.classList.add('display__cursor--hide');
+  }
 }
 
 
