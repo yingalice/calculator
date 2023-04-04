@@ -6,15 +6,14 @@ let savedExpression = {};
 const allBtns = document.querySelectorAll('[data-btn-type]');
 const numberBtns = document.querySelectorAll('[data-btn-type="number"]');
 const operatorBtns = document.querySelectorAll('[data-btn-type="operator"]');
-const posNegBtn = document.querySelector('[data-btn-type="posneg"');
-const decimalBtn = document.querySelector('[data-btn-type="decimal"');
+const posNegBtn = document.querySelector('[data-btn-type="posneg"]');
+const decimalBtn = document.querySelector('[data-btn-type="decimal"]');
 const clearBtn = document.querySelector('[data-btn-type="clear"]');
 const backspaceBtn = document.querySelector('[data-btn-type="backspace"]');
 const equalsBtn = document.querySelector('[data-btn-type="equals"]');
 const historyEntries = document.querySelector('.history__entries');
 const clearHistoryBtn = document.querySelector('.history__clear');
 
-allBtns.forEach((btn) => btn.addEventListener('click', addBtnPressEffect));
 numberBtns.forEach((btn) => btn.addEventListener('click', appendNumber));
 operatorBtns.forEach((btn) => btn.addEventListener('click', appendOperator));
 posNegBtn.addEventListener('click', appendPosNeg);
@@ -22,9 +21,13 @@ decimalBtn.addEventListener('click', appendDecimal);
 clearBtn.addEventListener('click', clear);
 backspaceBtn.addEventListener('click', backspace);
 equalsBtn.addEventListener('click', displayFinalResult);
-historyEntries.addEventListener('click', selectHistoryEntry, false);
+historyEntries.addEventListener('click', selectHistoryEntry);
 clearHistoryBtn.addEventListener('click', clearHistory);
 document.addEventListener('keydown', handleKeyboardInput);
+allBtns.forEach((btn) => {
+  btn.addEventListener('click', () => setTimeout(() => btn.blur(), 50))
+});
+
 
 // ========== Math ==========
 function add(a, b) {
@@ -40,7 +43,7 @@ function multiply(a, b) {
 }
 
 function divide(a, b) {
-  return b === 0 ? `Can't divide by 0` : a / b;
+  return (b === 0) ? `Can't divide by 0` : a / b;
 }
 
 function operate() {
@@ -68,59 +71,56 @@ function operate() {
 function appendNumber(e) {
   const numberInput = e.target.textContent;
   const operand = getCurrentOperand();
-
-  if (expression[operand] === '0') expression[operand] = ''; // Remove leading zeros
-  if (expression[operand] === '-0') expression[operand] = '-'; // Remove leading zeros (negative)
-  expression[operand] += numberInput; // Append new number
-  if (operand === 'operand2') {
-    const result = operate();
-    if (!isNaN(result)) {
-      updateResultDisplay(addComma(result)); // Update calculation in real time
-    } else {
-      updateResultDisplay(''); // Don't display divide by 0 error until equals is pressed
-    }
+  
+  if (expression[operand] === '0' || expression[operand] === '-0') {
+    expression[operand] = expression[operand].replace('0', '');  // Remove leading zero
   }
+
+  expression[operand] += numberInput;  // Append new number
   refreshDisplay();
 }
 
 function appendOperator(e) {
-  // Calculate any existing pair of numbers first
-  // Operators evaluated left to right (no order of expressions)
+  // Calculate any existing pair of numbers first.  Display the result or an error.
+  // Operators are evaluated left to right (no order of expressions)
   // Example: 12 + 7 - 5 * 3 = 42.  After inputting '12 + 7 -', main display will read '19 -'
-  if (expression.operand2) finalizeCalculation();
-  expression.operator = e.target.textContent;
-  refreshDisplay();
+  if (isExpressionComplete()) displayFinalResult();
+
+  // If no errors, set the new operator
+  if (display.resultText === '') {
+    expression.operator = e.target.textContent;
+    refreshDisplay();
+  }
 }
 
 function appendPosNeg() {
-  // Returns current operand as a positive or negative number (toggle)
+  // Changes the sign of the current operand (positive or negative)
   const operand = getCurrentOperand();
   if (expression[operand] === '') return;
-  
-  // Doing it this way instead of multiplying by -1 to keep original format
-  // (retain scientific or standard notation)
+  // Add or remove negative sign while keeping original format (retain scientific or standard notation)
   expression[operand] = (expression[operand].startsWith('-'))
-                          ? expression[operand].slice(1)
-                          : `-${expression[operand]}`;
+                          ? expression[operand].slice(1)  // Remove negative sign
+                          : `-${expression[operand]}`;  // Add negative sign
   refreshDisplay();
-  return expression[operand];
 }
 
 function appendDecimal() {
   const operand = getCurrentOperand();
-  if (expression[operand].includes('.')) return; // No more than 1 decimal per operand
-  const decimalFormat = expression[operand] === '' ? '0.' : '.'; // Format decimal with leading zero (ie. 0.15 insted of .15)
-  expression[operand] += decimalFormat;
+  if (expression[operand].includes('.')) return;  // No more than 1 decimal per operand
+  const decimalFormat = (expression[operand] === '') ? '0.' : '.';  // Format decimal with leading zero (ie. 0.15 instead of .15)
+  expression[operand] += decimalFormat;  // Append decimal
   refreshDisplay();
 }
 
 function finalizeCalculation() {
-  // Returns result of the current expression
+  // Returns string result of the current expression
   // User is done entering this expression (pressed equals or an additional operator)
-  // Use result as operand1 of next expression, and clear operand2 and operator
+  // 1.  Add to history panel
+  // 2.  Save expression so user can undo with backspace (ie. backspace 7 reveals 5 + 2)
+  // 3.  Use result as operand1 of next expression, and clear operand2 and operator
   const result = operate();
-  savedExpression = {...expression};
   appendHistory({...expression});
+  savedExpression = {...expression};
   expression.operand1 = result;
   expression.operand2 = '';
   expression.operator = '';
@@ -130,7 +130,7 @@ function finalizeCalculation() {
 
 // ========== Corrections ==========
 function clear() {
-  // Reset everything
+  // Reset everything in the calculator (not history panel)
   expression = { operand1: '0', operand2: '', operator: '' };
   updateMainDisplay('0');
   updateResultDisplay('');
@@ -138,36 +138,28 @@ function clear() {
 }
 
 function backspace() {
-  // If prior action was pressing equals to get a result,
-  // restore the previous expression
+  // If last action was pressing equals to get a result, then backspacing will
+  // restore the previous expression (ie. backspace 7 reveals 5 + 2)
   if (Object.keys(savedExpression).length !== 0) {
     expression = {...savedExpression};
-    refreshDisplay();
-    return;
-  }
 
-  // Everything erased, reset to 0
-  if (display.mainText.length === 1) {
-    clear();
-    return;
-  }
-
-  // Remove last character, and update corresponding variable (operator1, operator2, or operand)
-  if (expression.operand2) {
-    if ((expression.operand2.length === 2) && (expression.operand2.startsWith('-'))) {  // Single digit negative
+  // Remove last character, and update corresponding variable (operand2, operator, or operand1)
+  } else if (expression.operand2) {
+    if ((expression.operand2.startsWith('-')) && (expression.operand2.length === 2)) {  // Single digit negative
       expression.operand2 = '';
     } else {
-      expression.operand2 = expression.operand2.slice(0, -1);
+      expression.operand2 = expression.operand2.slice(0, -1);  // Remove last character
     }
   } else if (expression.operator) {
     expression.operator = '';
   } else if (expression.operand1) {
-    if ((expression.operand1.includes('e')) ||  // Clear entire scientific notation (don't backspace one-by-one)
-       ((expression.operand1.length === 2) && (expression.operand1.startsWith('-')))) {  // Single digit negative
-      clear();
+    if ((display.mainText.length === 1) ||  // On last character
+       ((expression.operand1.startsWith('-')) && (expression.operand1.length === 2)) ||  // Single digit negative
+       (expression.operand1.includes('e'))) {  // Scientific notation
+      clear();  // Delete everything (don't backspace one-by-one).  Reset to 0
       return;
     } else {
-      expression.operand1 = expression.operand1.slice(0, -1);
+      expression.operand1 = expression.operand1.slice(0, -1);  // Remove last character
     }
   }
   refreshDisplay();
@@ -178,11 +170,15 @@ function backspace() {
 function displayFinalResult() {
   if (!isExpressionComplete()) return;
   // If result is currently blank, then there's a hidden error
-  // Show the error, but don't save it to operand1 or update the main display
+  // Show the error, but don't save it to operand1 or update the main display and history
   const result = (display.resultText === '') ? operate() : finalizeCalculation();
   if (isNaN(result)) {
+    // Result display = Shows error
+    // Main display = unchanged (still shows expression that led to error)
     updateResultDisplay(addComma(result));
   } else {
+    // Main display = Shows calculated result (number)
+    // Result display = blank
     updateMainDisplay(addComma(result));
     updateResultDisplay('');
   }
@@ -211,14 +207,26 @@ function updateResultDisplay(content) {
 }
 
 function refreshDisplay() {
-  // Update the displays using the operands and operator currently stored in expression
+  // Refreshes the display upon new button input or history restoration,
+  // based on the operands and operator currently stored in expression
+  // Calculates the result if possible, errors are hidden at this stage
+  let result = '';
+  if (isExpressionComplete()) {
+    result = operate();
+    result = (!isNaN(result))
+               ? addComma(result)  // Update calculations in real time
+               : '';               // Don't display errors yet (only shown when equals is pressed)
+  }
+
   updateMainDisplay(formatExpression());
-  const result = (isExpressionComplete() && !((expression.operator === '÷') && (Number(expression.operand2) === 0)))
-                   ? addComma(operate())
-                   : '';
-  updateResultDisplay(result);  // Only display results if it can be calculated without error
+  updateResultDisplay(result);
+
+  // Once user presses a new button or restores from history, pressing backspace 
+  // will no longer pull up the original expression, and instead will go back
+  // to deleting one character at a time
   savedExpression = {};
 }
+
 
 // ========== History ==========
 function appendHistory(historyData) {
@@ -264,6 +272,22 @@ function clearHistory() {
 
 
 // ========== Formatting ==========
+function roundResult(input) {
+  // Returns number rounded to max precision
+  if (isNaN(input)) return input;
+
+  // toPrecision(15) to prevent floating point calculation errors
+  // parseFloat to remove trailing 0's in decimals
+  const rounded = parseFloat(Number(input).toPrecision(15));
+
+  // JavaScript uses scientific notation at 1e21
+  // Change that to 1e16 so it doesn't take up too much space
+  const result = (rounded >= 1e16 || rounded <= -1e16)
+                 ? Number(rounded).toExponential()
+                 : rounded;
+  return result;
+}
+
 function addComma(input) {
   // Returns string with number formatted with comma thousands separator (ie. 4150 -> 4,150)
   input = String(input);
@@ -293,36 +317,20 @@ function removeComma(input) {
   return String(input).replace(/,/g, '');
 }
 
-function roundResult(input) {
-  // Returns number rounded to max precision
-  if (isNaN(input)) return input;
-
-  // toPrecision(15) to prevent floating point calculation errors
-  // parseFloat to remove trailing 0's in decimals
-  const rounded = parseFloat(Number(input).toPrecision(15));
-
-  // JavaScript uses scientific notation at 1e21
-  // Change that to 1e16 so it doesn't take up too much space
-  const result = (rounded >= 1e16 || rounded <= -1e16)
-                 ? Number(rounded).toExponential()
-                 : rounded;
-  return result;
+function addParentheses(input) {
+  // Add parentheses for negative numbers
+  return (String(input).startsWith('-'))
+          ? `(${input})`
+          : input;
 }
 
 function formatExpression() {
   // Returns operands and operator formatted into an expression
   // Operands have comma thousands separator to be display-friendly
   // Example: 5,000 + 0.125
-  return `${addParenthesis(addComma(expression.operand1))} 
+  return `${addParentheses(addComma(expression.operand1))} 
           ${expression.operator} 
-          ${addParenthesis(addComma(expression.operand2))}`.trim();
-}
-
-function addParenthesis(input) {
-  // Add parenthesis for negative number
-  return (String(input).startsWith('-'))
-          ? `(${input})`
-          : input;
+          ${addParentheses(addComma(expression.operand2))}`.trim();
 }
 
 
@@ -332,23 +340,19 @@ function handleKeyboardInput(e) {
   // Equals button responds to both 'Enter' and '=' keys
   if (e.key === '/') e.preventDefault(); // prevent '/' from opening find in Firefox
   const btn = document.querySelector(`[data-key~="${e.key}"]`);
-  if (btn) btn.click();
-}
-
-function addBtnPressEffect(e) {
-  // Trigger button press effect, works with keyboard input
-  // Note: Normally would use :active in CSS, but that doesn't work with keyboard
-  const btn = e.target;
-  btn.blur();
-  btn.classList.add('button--pressed');
-  setTimeout(() => btn.classList.remove('button--pressed'), 100);
+  if (btn) {
+    btn.click();
+    // Trigger button press effect for keyboard input by quickly adding/removing class
+    btn.classList.add('button--pressed');
+    setTimeout(() => btn.classList.remove('button--pressed'), 100);
+  }
 }
 
 
 // ========== Utility ==========
 function getCurrentOperand() {
-  // Returns which operand is currently being entered for number or decimal input
-  return !expression.operator ? 'operand1' : 'operand2';
+  // Returns which operand is currently being entered
+  return (!expression.operator) ? 'operand1' : 'operand2';
 }
 
 function isExpressionComplete() {
