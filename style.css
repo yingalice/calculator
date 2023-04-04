@@ -9,7 +9,16 @@
   --color-dove-gray: 64, 64, 64;  /* history hover */
   --color-gray: 128, 128, 128;  /* history scrollbar (thumb) */
   --color-chathams-blue: 28, 69, 140;  /* footer */
-  --border-radius: 8px;
+  --border-radius: 6px;
+  font-size: 16px;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
 }
 
 body {
@@ -32,21 +41,24 @@ body {
 .main {
   display: flex;
   gap: 3rem;
+  padding: 2rem;
   margin: auto;
-  height: 30rem;
-  width: 40rem;
+  width: 100%;
+  max-width: 45rem;
 }
 
 .calculator {
   flex: 3;
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  padding: 2.5%;
   border: 2px solid white;
   border-radius: var(--border-radius);
-  box-shadow: 0px 0px 0px 0.75rem rgb(var(--color-mine-shaft)), 0px 0px 1rem 1rem rgb(var(--color-mine-shaft));
+  box-shadow: 0px 0px 0px 0.75rem rgb(var(--color-mine-shaft)),
+              0px 0px 1rem 1rem rgb(var(--color-mine-shaft));
   margin: 0 auto;
   background-image: linear-gradient(-225deg, #E3FDF5 0%, #FFE6FA 100%);
+  aspect-ratio: 6 / 7;
 }
 
 .display {
@@ -99,7 +111,7 @@ body {
 .buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.6rem;
+  gap: 2.5%;
   height: 80%;
 }
 
@@ -170,12 +182,13 @@ button:active:enabled,
 }
 
 .history {
-  flex: 1.75;
+  flex: 2;
   display: flex;
   flex-direction: column;
   border: 1px solid white;
   border-radius: var(--border-radius);
-  box-shadow: 0px 0px 0px 0.75rem rgb(var(--color-mine-shaft)), 0px 0px 1rem 1rem rgb(var(--color-mine-shaft));
+  box-shadow: 0px 0px 0px 0.75rem rgb(var(--color-mine-shaft)),
+              0px 0px 1rem 1rem rgb(var(--color-mine-shaft));
   background-color: rgb(var(--color-mine-shaft));
 }
 
@@ -215,7 +228,7 @@ button:active:enabled,
 }
 
 .history__entry--slide {
-  animation: slide 0.75s forwards;
+  animation: slide 0.5s forwards;
 }
 
 .history__expression,
@@ -229,7 +242,7 @@ button:active:enabled,
 }
 
 .history__expression {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: rgb(var(--color-santas-gray));
 }
 
@@ -285,5 +298,35 @@ button:active:enabled,
 @keyframes fade {
   100% {
     opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .main {
+    flex-direction: column;
+    align-items: center;
+    padding: 8vw;
+  }
+
+  .calculator {
+    flex: initial;
+    width: 100%;
+  }
+
+  .history {
+    flex: initial;
+    width: 70%;
+  }
+}
+
+@media (max-width: 320px) {
+  :root {
+    font-size: 12px;
   }
 }

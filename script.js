@@ -24,9 +24,11 @@ equalsBtn.addEventListener('click', displayFinalResult);
 historyEntries.addEventListener('click', selectHistoryEntry);
 clearHistoryBtn.addEventListener('click', clearHistory);
 document.addEventListener('keydown', handleKeyboardInput);
-allBtns.forEach((btn) => {
-  btn.addEventListener('click', () => setTimeout(() => btn.blur(), 50))
-});
+window.addEventListener('load', setHistoryPanelHeight);
+window.addEventListener('resize', setHistoryPanelHeight);
+allBtns.forEach((btn) => btn.addEventListener('click', () => {
+  setTimeout(() => btn.blur(), 50);
+}));
 
 
 // ========== Math ==========
@@ -350,6 +352,18 @@ function handleKeyboardInput(e) {
 
 
 // ========== Utility ==========
+function setHistoryPanelHeight() {
+  // Sets history panel height dynamically as a percentage of calculator height
+  const main = document.querySelector('.main');
+  const calculator = document.querySelector('.calculator');
+  const history = document.querySelector('.history');
+  const calculatorHeight = calculator.offsetHeight;
+  const flexDirection = window.getComputedStyle(main).flexDirection;
+  history.style.height = (flexDirection === 'row')
+                         ? `${calculatorHeight}px`          // Side-by-side = 100% of calculator's height
+                         : `${calculatorHeight * 0.6}px`;   // Up-and-down = 70% of calculator's height
+}
+
 function getCurrentOperand() {
   // Returns which operand is currently being entered
   return (!expression.operator) ? 'operand1' : 'operand2';
