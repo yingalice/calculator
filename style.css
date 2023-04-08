@@ -1,14 +1,15 @@
 :root {
   --color-mine-shaft: 50, 50, 50;  /* display, box shadows, history bg */
-  --color-steel-blue: 176, 196, 222;  /* button shadows */
+  --color-aquamarine: 127, 255, 212;  /* results text */
+  --color-red: 255, 0, 0;  /* error text */
   --color-santas-gray: 164, 166, 180;  /* number buttons, history text, history scrollbar (track) */
   --color-cornflower-blue: 100, 149, 237;  /* equals and operator buttons */
-  --color-aquamarine: 127, 255, 212;  /* results display */
   --color-goldenrod: 218, 165, 32;  /* clear and backspace buttons */
-  --color-red: 255, 0, 0;  /* error text */
-  --color-dove-gray: 64, 64, 64;  /* history hover */
+  --color-steel-blue: 176, 196, 222;  /* button shadows */
+  --color-dove-gray: 64, 64, 64;  /* history entry hover */
   --color-gray: 128, 128, 128;  /* history scrollbar (thumb) */
-  --color-chathams-blue: 28, 69, 140;  /* footer */
+  --color-lightblue: 173, 216, 230;  /* footer link hover */
+  --color-chathams-blue: 28, 69, 140;  /* footer background*/
   --border-radius: 6px;
   font-size: 16px;
 }
@@ -29,6 +30,7 @@ body {
   background-image: url('./img/background.png');
   background-size: cover;
   text-align: center;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .container {
@@ -56,7 +58,6 @@ body {
   border-radius: var(--border-radius);
   box-shadow: 0px 0px 0px 0.75rem rgb(var(--color-mine-shaft)),
               0px 0px 1rem 1rem rgb(var(--color-mine-shaft));
-  margin: 0 auto;
   background-image: linear-gradient(-225deg, #E3FDF5 0%, #FFE6FA 100%);
   aspect-ratio: 6 / 7;
 }
@@ -64,13 +65,11 @@ body {
 .display {
   display: grid;
   grid-template-rows: 60% 40%;
-  align-items: center;
-  border: 2px solid silver;
+  border: 2px solid rgb(var(--color-steel-blue));
   border-radius: var(--border-radius);
   margin-bottom: 1rem;
   height: 20%;
   background-color: rgb(var(--color-mine-shaft));
-  overflow: hidden;
   cursor: text;
 }
 
@@ -79,7 +78,7 @@ body {
   display: flex;
   flex-direction: row-reverse;
   margin: 0 0.75rem;
-  overflow-x: auto;
+  overflow: scroll;
   white-space: nowrap;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -91,6 +90,7 @@ body {
 }
 
 .display__main {
+  align-self: center;
   font-size: 1.5rem;
 }
 
@@ -104,10 +104,6 @@ body {
   color: rgb(var(--color-red));
 }
 
-.display__result::before {
-  content: '\00a0';
-}
-
 .buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -116,14 +112,14 @@ body {
 }
 
 button {
-  position: relative;
-  border: 1px solid darkslategray;
+  border: 1px solid black;
   border-radius: var(--border-radius);
-  box-shadow: 
-    inset -0.2rem -0.2rem .1rem rgb(var(--color-steel-blue), 0.25),
-    0.2rem 0.2rem rgb(var(--color-steel-blue), 0.75);
+  box-shadow: inset -0.2rem -0.2rem .1rem rgb(var(--color-steel-blue), 0.25),
+              0.2rem 0.2rem rgb(var(--color-steel-blue), 0.75);
+  color: black;
   font: inherit;
   cursor: pointer;
+  touch-action: manipulation;
   transition: all 0.1s;
 }
 
@@ -149,18 +145,12 @@ button:active:enabled,
   background-color: rgb(var(--color-santas-gray), 0);
 }
 
-[data-btn-type="operator"] {
-  background-color: rgb(var(--color-cornflower-blue));
-}
-
-[data-btn-type="operator"]:hover:enabled {
-  background-color: rgb(var(--color-cornflower-blue), 0.8);
-}
-
+[data-btn-type="operator"],
 [data-btn-type="equals"] {
   background-color: rgb(var(--color-cornflower-blue));
 }
 
+[data-btn-type="operator"]:hover,
 [data-btn-type="equals"]:hover {
   background-color: rgb(var(--color-cornflower-blue), 0.8);
 }
@@ -201,12 +191,12 @@ button:active:enabled,
 
 .history__entries {
   flex: 1;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: overlay;
 }
 
 .history__entries::-webkit-scrollbar {
   width: 0.4rem;
-  height: 0.4rem;
 }
 
 .history__entries::-webkit-scrollbar-thumb {
@@ -224,11 +214,11 @@ button:active:enabled,
 }
 
 .history__entry {
-  padding: 1rem;
+  padding: 0.75rem 1rem;
 }
 
 .history__entry--slide {
-  animation: slide 0.5s forwards;
+  animation: slide 0.75s;
 }
 
 .history__expression,
@@ -242,7 +232,7 @@ button:active:enabled,
 }
 
 .history__expression {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: rgb(var(--color-santas-gray));
 }
 
@@ -255,8 +245,7 @@ button:active:enabled,
   padding: 0.5rem;
   border-top: 1px solid rgb(var(--color-santas-gray));
   border-radius: 0 0 var(--border-radius) var(--border-radius);
-  font-size: 0.8rem;
-  
+  font-size: 0.85rem;
 }
 
 .history__entry:hover,
@@ -265,9 +254,9 @@ button:active:enabled,
   cursor: pointer;
 }
 
+.history__entry:active,
 .history__clear:active {
-  color: rgb(var(--color-santas-gray));
-  background-color: rgb(var(--color-mine-shaft), 0.5);
+  background-color: rgb(var(--color-gray), 0.3);
 }
 
 .footer {
@@ -280,24 +269,28 @@ button:active:enabled,
   color: inherit;
 }
 
-.footer__link:hover {
-  color: lightblue;
-}
-
-@keyframes slide {
-  0% {
-    height: 0;
-    opacity: 0;
-  }
-  50% {
-    height: var(--height);
-    opacity: 0;
-  }
+.footer__link:hover,
+.footer__link:active {
+  color: rgb(var(--color-lightblue));
 }
 
 @keyframes fade {
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes slide {
+  0% {
+    padding: 0;
+    height: 0;
+    opacity: 0;
+  }
+  50% {
+    padding: 0.75rem 1rem;
+    height: var(--height);
+    opacity: 0;
+    transform: scaleX(1.1);
   }
 }
 
