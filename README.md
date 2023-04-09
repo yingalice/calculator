@@ -69,5 +69,5 @@
 ## Screenshots
 - Desktop  
 ![desktop layout](./img/screenshots/desktop-layout.png)
-- Mobile
+- Mobile  
 ![mobile layout](./img/screenshots/mobile-layout.png)
