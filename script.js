@@ -73,8 +73,8 @@ function operate() {
 function appendNumber(e) {
   const numberInput = e.target.textContent;
   const operand = getCurrentOperand();
-  
-  if (expression[operand].includes('Infinity')) return;  // Don't append numbers to Infinity
+
+  clearPreviousResult();
   if (expression[operand] === '0' || expression[operand] === '-0') {
     expression[operand] = expression[operand].replace('0', '');  // Remove leading zero
   }
@@ -108,11 +108,9 @@ function appendPosNeg() {
 }
 
 function appendDecimal() {
+  clearPreviousResult();
   const operand = getCurrentOperand();
-  if ((expression[operand].includes('.')) ||  // No more than 1 decimal per operand
-      (expression[operand].includes('Infinity'))) {  // Don't append decimals to Infinity
-        return;
-     }
+  if (expression[operand].includes('.')) return;  // No more than 1 decimal per operand
   const decimalFormat = (expression[operand] === '') ? '0.' : '.';  // Format decimal with leading zero (ie. 0.15 instead of .15)
   expression[operand] += decimalFormat;  // Append decimal
   refreshDisplay();
@@ -353,6 +351,15 @@ function handleKeyboardInput(e) {
 
 
 // ========== Utility ==========
+function clearPreviousResult() {
+  // If equals was just pressed (ie. result in top main display, savedExpression 
+  // is populated), do not allow user to append number or decimal to the result.
+  // Remove the result first.
+  if (Object.keys(savedExpression).length !== 0) {
+    expression.operand1 = '0';
+  }
+}
+
 function setHistoryPanelHeight() {
   // Sets history panel height dynamically as a percentage of calculator height
   const main = document.querySelector('.main');
